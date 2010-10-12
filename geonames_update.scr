@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# get date variables from yesterday
+# download update files from geonames
+year=$(date --date='1 day ago' +%Y)
+month=$(date --date='1 day ago' +%m)
+day=$(date --date='1 day ago' +%d)
+
+# download update files from geonames
+wget -q http://download.geonames.org/export/dump/modifications-$year-$month-$day.txt
+wget -q http://download.geonames.org/export/dump/alternateNamesModifications-$year-$month-$day.txt
+wget -q http://download.geonames.org/export/dump/deletes-$year-$month-$day.txt
+wget -q http://download.geonames.org/export/dump/alternateNamesDeletes-$year-$month-$day.txt
+
+# generate import script
+echo "use geonames;" > geonames_import.sql
+echo "LOAD DATA LOCAL INFILE 'modifications-$year-$month-$day.txt' REPLACE INTO TABLE geoname (geonameid,name, asciiname,alternatenames,latitude,longitude,fclass,fcode,country,cc2, admin1,admin2,admin3,admin4,population,elevation,gtopo30,timezone,moddate)" >> geonames_import.sql
+echo "LOAD DATA LOCAL INFILE 'alternateNamesModifications-$year-$month-$day.txt' REPLACE INTO TABLE geoname (geonameid,name, asciiname,alternatenames,latitude,longitude,fclass,fcode,country,cc2, admin1,admin2,admin3,admin4,population,elevation,gtopo30,timezone,moddate)" >> geonames_import.sql
+
+# generate delete script
+echo "use geonames;" > geonames_delete.sql
+while read line ;do
+  set -- $line
+  echo "delete from geoname where geonameid=$1;" >> geonames_delete.sql
+done < deletes-$year-$month-$day.txt
+while read line ;do
+  set -- $line
+  echo "delete from alternatename where alternatenameid=$1;" >> geonames_delete.sql
+done < alternateNamesDeletes-$year-$month-$day.txt
+
+# run scripts
+mysql -u root <geonames_import.sql
+mysql -u root <geonames_delete.sql
+
+# clean up files
+rm geonames_import.sql
+rm geonames_delete.sql
+rm modifications-$year-$month-$day.txt
+rm alternateNamesModifications-$year-$month-$day.txt
+rm deletes-$year-$month-$day.txt
+rm alternateNamesDeletes-$year-$month-$day.txt

@@ -1,0 +1,8 @@
+# This project is an experiment to see what I could do with geonames data and MongoDB's geospatial indexing.
+#
+# This repo includes links to the raw data and my Ruby scripts for importing and querying the data.
+#
+# The data is available at: http://download.geonames.org/export/dump/
+#
+# I used the allCountries.zip and alternateNames.zip files.
+
