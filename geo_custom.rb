@@ -14,19 +14,39 @@ placemarkers.create_index([["loc", Mongo::GEO2D]])
 #since it's a database command, you'll build an ordered hash.
 counter = 0
 zc = 0
-states = { "alabama" => "AL", "alaska" => "AK", "arizona" => "AZ", "arkansas" => "AR", "california" => "CA", "colorado" => "CO", "connecticut" => "CT", "delaware" => "DE", "district of columbia" => "DC", "florida" => "FL", "georgia" => "GA", "hawaii" => "HI", "idaho" => "ID", "illinois" => "IL", "indiana" => "IN", "iowa" => "IA", "kansas" => "KS", "kentucky" => "KY", "louisiana" => "LA", "maine" => "ME", "maryland" => "MD", "massachusetts" => "MA", "michigan" => "MI", "minnesota" => "MN", "mississippi" => "MS", "missouri" => "MO", "montana" => "MT", "nebraska" => "NE", "nevada" => "NV", "new hampshire" => "NH", "new jersey" => "NJ", "new mexico" => "NM", "new york" => "NY", "north carolina" => "NC", "north dakota" => "ND", "ohio" => "OH", "oklahoma" => "OK", "oregon" => "OR", "pennsylvania" => "PA", "rhode island" => "RI", "south carolina" => "SC", "south dakota" => "SD", "tennessee" => "TN", "texas" => "TX", "utah" => "UT", "vermont" => "VT", "virginia" => "VA", "washington" => "WA", "west virginia" => "WV", "wisconsin" => "WI", "wyoming" => "WY" }
 
 start = Time.now
 File.open("custom_where.csv", "r") do |infile|
   while (line = infile.gets)
-    line.strip!.gsub!(/\%2C/,'+')
+    r=0
+    line = line.strip.gsub(/\%2C/,'+').gsub(/\./, '')
     fields = line.downcase.split("+").delete_if {|x| x==''}
     fields = fields.compact
-    r = placemarkers.find({"keywords" => {"$all" => fields}}).count()
+    r = placemarkers.find({"keywords" => {"$all" => fields.sort}}).count() if (fields.size > 0 and fields.size < 5)
+    i=0
+    while (r==0 and i < fields.size)
+      if fields[i] == fields[i].to_i.to_s
+        r = placemarkers.find({"keywords" => {"$all" => [fields[i]]}}).count()
+      end
+      i += 1
+    end
+    j = 1
+    while (r==0 and j<fields.size)
+      if r == 0
+        r = placemarkers.find({"keywords" => {"$all" => fields.sort[0..-(j+1)]}}).count() if (fields.size > 0 and fields.size < 5)
+      end
+      j += 1
+    end
+    k=0
+    while (r==0 and k < fields.size)
+      r = placemarkers.find({"keywords" => {"$all" => [fields[k]]}}).count()
+      k += 1
+    end
+
     counter += 1
     zc += 1 if r == 0
     #puts counter
-    puts "#{counter}:#{r.inspect}:#{fields.inspect}"
+    puts "#{counter}:#{r.inspect}:#{fields.inspect}" if r == 0
   end
 end
 stop = Time.now

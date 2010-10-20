@@ -8,7 +8,7 @@ counter = 0
 placemarkers.find().each do |pm|
   fields = []
   fields << pm["name"].downcase.split(" ")
-  fields << pm["asciiname"].downcase.split(" ")
+  fields << pm["asciiname"].downcase.split(" ") if not pm["asciiname"].nil?
   fields << pm["alternatenames"].downcase.gsub(/ /,",").split(",") if not pm["alternatenames"].nil?
   fields << pm["countrycode"].downcase.split(" ") if not pm["countrycode"].nil?
   fields << pm["admin1_code"].downcase.split(" ") if not pm["admin1_code"].nil?
