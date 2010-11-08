@@ -5,6 +5,7 @@ placemarkers = db.collection("placemarkers")
 #placemarkers.remove
 
 counter = 0
+start = Time.now
 File.open("zipcodes.csv", "r") do |infile|
   while (line = infile.gets)
     # split line in to usable fields
@@ -30,6 +31,8 @@ File.open("zipcodes.csv", "r") do |infile|
       placemarkers.update({"name" => city, "admin1_code" => state},{"$addToSet" => { "postalcodes" => postalcode}})
     end
     counter += 1
-    puts "#{counter} : #{line}"
+    puts "#{counter} : #{line}" if counter % 1000 == 0
   end
 end
+stop = Time.now
+puts "#{counter} ZIP CODES IN: #{(stop-start)/60} minutes"

@@ -30,7 +30,8 @@ File.open("20k_latitude_longitude.csv", "r") do |infile|
     distance = r["results"][0]["dis"].to_f * 69
     no_pc += 1 if postalcode.nil?
     counter += 1
-    puts "#{counter}: #{name}, #{state}, #{postalcode}, #{distance}" if postalcode.nil?
+    #puts "#{counter}: #{name}, #{state}, #{postalcode}, #{distance}" if postalcode.nil?
+    puts counter
     #puts r.inspect
     #results.each do |k,v|
       #puts "#{k.inspect}, #{v.inspect}"

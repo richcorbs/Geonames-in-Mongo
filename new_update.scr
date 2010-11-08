@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# get date variables from yesterday
+# download update files from geonames
+# LINUX
+#year=$(date --date='1 day ago' +%Y)
+#month=$(date --date='1 day ago' +%m)
+#day=$(date --date='1 day ago' +%d)
+# MAC
+year=$(date -v-1d "+%Y")
+month=$(date -v-1d "+%m")
+day=$(date -v-1d "+%d")
+
+# download update files from geonames
+wget -q http://download.geonames.org/export/dump/modifications-$year-$month-$day.txt
+wget -q http://download.geonames.org/export/dump/deletes-$year-$month-$day.txt
+
+#mongo test --eval "db.placemarkers.drop()"
+
+# MODIFICATIONS
+while read line
+do
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19;
+  do
+    eval v${i}='$(printf "${line}" | cut -f${i})'
+  done
+  if [ "${v7}" == "A" ] || [ "${v7}" == "P" ]
+  then
+    v3=$(echo $v3|sed "s/\'//g")
+    v4=$(echo $v4|sed "s/\'//g")
+    hash1="{geonameid:'$v1'}"
+    hash2="{geonameid:'$v1',name:'$v2',asciiname:'$v3',alternatenames:'$v4',loc:{lat:$v5,lng:$v6},feature_class:'$v7',feature_code:'$v8',country:'$v9',cc2:'$v10',admin1_code:'$v11',admin2_code:'$v12',admin3_code:'$v13',admin4_code:'$v14',population:'$v15',elevation:'$v16',gtopo30:'$v17',timezone:'$v18',moddate:'$v19'}"
+    echo $hash1
+    echo $hash2
+    mongo test --eval "db.placemarkers.update(${hash1},${hash2},1)"
+  fi
+done < "modifications-$year-$month-$day.txt"
+
+# MODIFICATIONS
+while read line
+do
+  geonameid=$(printf "${line}" | cut -f1)
+  hash="{geonameid:'${geonameid}'}"
+  mongo test --eval "db.placemarkers.remove($hash)"
+  echo $hash
+done < "deletes-$year-$month-$day.txt"
+
+# clean up files
+rm modifications-$year-$month-$day.txt
+rm deletes-$year-$month-$day.txt
